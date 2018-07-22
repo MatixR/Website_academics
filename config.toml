@@ -6,7 +6,7 @@
 
 # The URL of your website.
 # End your URL with a `/` trailing slash, e.g. `https://example.com/`.
-baseurl = "https://matixr.github.io/website_test/"
+baseurl = "https://matixr.github.io/Website_academics/"
 
 publishDir = "docs"
 
