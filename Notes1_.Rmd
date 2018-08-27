@@ -1,0 +1,118 @@
+---
+title: "在R Markdown文档中使用中文"
+author:
+  - 谢益辉
+  - 邱怡轩
+  - 于淼
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+classoption: "hyperref,"
+---
+
+# R and operating system 
+
+
+```{r}
+Sys.info()
+
+Sys.getenv()
+
+Sys.localeconv()
+
+
+```
+
+
+# R startup
+
+
+R 每次开启时会读取两个文件：
+
+* `.Renviron` 主要的目的是设定*环境变量*，告诉R如何寻找外部的程序，并且能够保存用户的信息，如API秘钥。
+
+* `.Rprofile `是一个简单的文本文件，每次开启的时候会运行几行R命令。例如每次开启时检验是否有程序包升级。
+
+
+R在运行时，会首先寻找`.Renviron`，其次是`.Rprofile `。不过在运行的过程中`.Renviron`的设定是高阶内容，如果设定不当很容易出现问题。
+
+## Location of Startup files
+
+需要注意三个文件夹：
+
+* `R_HOME`,这个是R安装的文件夹。其中的`etc`文件夹可以包含R启动时的程序。可以通过 `R.home()`找到具体的路径。
+* `HOME`，用户的主文件夹。在Mac系统中一般为`/home/username`，Windows系统中是`C:\Users\username`。可以通过`Sys.getenv("HOME")`找到操作系统中用户的主文件夹。
+
+* 还有是 *Current Working Directory*，就是当前工作的文件夹。可以用`getwd()`得到。
+
+R初始运行的文件`.Renviron` 和`.Rprofile `就位于上述三个文件夹之中。但是，在一个进程中（R session）只能运行1个`.Renviron` 和1个`.Rprofile `。这三个文件中的初始运行文件具有先后的运行顺序：`wd > HOME > R_HOME `。这也就是说，如果在当前的project运行的文件夹中建立新的`.Renviron` 或（和）`.Rprofile `，其他文件中的文件不会运行。
+
+
+
+```{r Check the existence of `Rprofiles`}
+
+path_profile_Rhome <- file.path(
+    Sys.getenv("R_HOME"), 
+    "etc", 
+    "Rprofile.site")
+path_profile_userHome <-  path.expand(file.path("~", ".Rprofile"))
+                                      
+path_profile_project <- file.path(getwd(), ".Rprofile") 
+
+
+
+candidates <- c( 
+  Sys.getenv("R_PROFILE"),
+   Sys.getenv("R_PROFILE_USER"),
+   path_profile_Rhome,
+   path_profile_userHome,
+  path_profile_project 
+  )
+
+candidates
+Filter(file.exists, candidates)
+
+
+```
+
+```{r Create Rprofile}
+
+
+# in working directory- project specified
+# 
+file.edit(".Rprofile")
+
+
+# in user's home directory - user specified
+file.edit("~/.Rprofile")
+
+
+```
+
+注意在R文件中的文件路径表示方法，在windows系统中路径的分隔符与R系统不同，所以常常使用`file.path`, `normalizePath`函数构建文件路径。
+
+`pathological`程序包给出了提取系统和文件路径的函数。
+
+
+```{r Path management}
+
+library(pathological)
+?pathological
+
+help(package = "pathological")
+
+os_path()
+
+example(Startup)
+
+r_profile()
+
+r_environ()
+r_environ_site()
+
+```
+
+
